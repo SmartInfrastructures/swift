@@ -3614,9 +3614,13 @@ def http_response_to_document_iters(response, read_chunk_size=4096):
     """
     if response.status == 200:
         # Single "range" that's the whole object
-        content_length = int(response.getheader('Content-Length'))
-        return iter([(0, content_length - 1, content_length,
-                      response.getheaders(), response)])
+        content_length = response.getheader('Content-Length')
+        if not content_length:
+            return iter([(None, None, None, response.getheaders(), response)])
+        else:
+            content_length = int(content_length)
+            return iter([(0, content_length - 1, content_length,
+                          response.getheaders(), response)])
 
     content_type, params_list = parse_content_type(
         response.getheader('Content-Type'))
